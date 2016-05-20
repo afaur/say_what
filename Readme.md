@@ -12,7 +12,11 @@ Currently relies on Splunk as a data store, but can be extended to use an open-s
 Relies on Uberi's SpeechRecognition PyAudio and API wrapper: https://github.com/Uberi/speech_recognition
 
 # Usage
-Start Splunk
+Install dependencies  
+`pip install -r requirements.txt`  
 
-Run say_what.py
+Start Splunk  
+
+Run say_what.py  
+`python say_what.py`  
 ### TODO: Improve usage
