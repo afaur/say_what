@@ -6,6 +6,7 @@ import thread
 import subprocess
 
 SPLUNK_URL = "https://localhost"
+
 # Splunk http event collector token
 hec_token = ""
 
@@ -13,7 +14,8 @@ hec_token = ""
 IBM_USERNAME = ""
 IBM_PASSWORD = ""
 
-def translate(audio,r):
+
+def translate(audio, r):
     # The translated output from IBM's Watson speech-to-text api
     # The r param is an instance of SpeechRecognition
     # Returns a dict because I plan on trying other speech-to-text tools
@@ -21,13 +23,18 @@ def translate(audio,r):
     results = {}
     text = False
     try:
-        text = r.recognize_ibm(audio, username=IBM_USERNAME, password=IBM_PASSWORD)
+        text = r.recognize_ibm(
+            audio, username=IBM_USERNAME, password=IBM_PASSWORD
+        )
         print("Results:" + text)
     except sr.UnknownValueError:
         # print("IBM Speech to Text could not understand audio")
         pass
     except sr.RequestError as e:
-        print("Could not request results from IBM Speech to Text service; {0}".format(e))
+        print(
+            "Could not request results from IBM Speech to Text service; {0}"
+            .format(e)
+        )
 
     if text:
         results['text'] = text
@@ -53,8 +60,9 @@ def send_to_splunk(event):
     event_json = json.dumps(event)
     # Ignore ssl cert warning
     # requests.packages.urllib3.disable_warnings()
-    try :
-        r = requests.post("%s:8088/services/collector/event" % SPLUNK_URL,
+    try:
+        requests.post(
+            "%s:8088/services/collector/event" % SPLUNK_URL,
             headers={"Authorization": "Splunk %s" % hec_token},
             data=event_json,
             verify=False)
@@ -63,9 +71,9 @@ def send_to_splunk(event):
         print e
 
 
-def consumer(audio,r):
+def consumer(audio, r):
     # Received audio, now transcribe it and send to Splunk
-    results = translate(audio,r)
+    results = translate(audio, r)
     if 'text' in results:
         event = create_event(results)
         send_to_splunk(event)
@@ -80,13 +88,14 @@ def consumer(audio,r):
 
 def main():
     # Spawn index/notify/play-wav script subprocess
-    subprocess.Popen(['python','./say_my_name.py'])
+    subprocess.Popen(['python', './say_my_name.py'])
     r = sr.Recognizer()
     while True:
         with sr.Microphone() as source:
             print("Listening...")
             audio = r.listen(source)
-            thread.start_new_thread(consumer,(audio,r))
+            thread.start_new_thread(consumer, (audio, r))
 
 if __name__ == '__main__':
     main()
+
